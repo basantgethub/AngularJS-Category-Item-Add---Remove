@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html data-ng-app="myApp">
+
+<head>
+  <meta charset="utf-8" />
+  <title>AngularJS Category & Item Add - Remove</title>
+  <script>
+    document.write('<base href="' + document.location + '" />');
+  </script>
+  <link href="style.css" rel="stylesheet" />
+  <script data-semver="1.2.28" src="https://code.angularjs.org/1.2.28/angular.js" data-require="angular.js@1.2.x"></script>
+  <script>
+		var app = angular.module('myApp', []);
+
+		app.controller('MainCtrl', function($scope) {
+			var vm = this;
+			vm.main = {
+				categories: []
+			};
+			vm.addCat = function() {
+				var cat = {name:'',lastname:'',firstname:''};
+				vm.main.categories.push(cat);
+			};
+			$scope.$on('delCategory', function(event, index){
+				var cats = vm.main.categories;
+				cats.splice(index, 1);
+			});
+		});
+
+		app.directive('category', function() {
+			return {
+				restrict: 'E',
+				replace: true,
+				controllerAs: 'cc',
+				controller: function ($scope) {
+					var vm = this;
+					vm.removeCat = function(index) {
+						$scope.$emit('delCategory', index);
+					};
+					vm.cat = {
+						items: [{id: 0, name: ''}]
+					};
+					vm.itemId = 0;
+					vm.addItem = function() {
+						vm.itemId = vm.itemId +1;
+						var item = {id: vm.itemId, name: '',firstname:''};
+						vm.cat.items.push(item);
+					};
+					$scope.$on('delItem', function(event, data){
+						var items = vm.cat.items;
+						items.splice(items.indexOf(data), 1);
+					});
+				}
+			};
+		});
+
+		app.directive('item', function() {
+		return {
+			restrict: 'E',
+			replace: true,
+			controllerAs: 'ic',
+			controller: function($scope) {
+				var vm = this;
+				vm.removeItem = function(item) {
+					$scope.$emit('delItem', item);
+				};
+
+			}
+		};
+		});
+  </script>
+</head>
+
+<body>
+  <form name="form" ng-submit="mc.submit()" ng-controller="MainCtrl as mc">
+    {{ mc.main }}
+   
+    <button ng-click="mc.addCat()">Add Category</button>
+
+    <category ng-repeat="cat in mc.main.categories">
+      <ul class="first-level">
+          {{ $index +1 }}. Category
+          <br>
+          <input type="text" ng-model="mc.main.categories[$index].name">
+		  <input type="text" ng-model="mc.main.categories[$index].lastname">
+		  <input type="text" ng-model="mc.main.categories[$index].firstname">
+          <button ng-click="cc.removeCat($index)">Del Category</button>
+          <button ng-click="cc.addItem()">Add Item</button>
+
+          <item ng-repeat="item in cc.cat.items track by item.id">
+              <li class="second-level">
+                {{ $index +1 }}.Item<br/>
+                <input type="text" ng-model="mc.main.categories[$parent.$index].items[item.id].name">
+				<input type="text" ng-model="mc.main.categories[$parent.$index].items[item.id].firstname">
+                <button ng-click="ic.removeItem(item)">Del Item</button>
+              </li>
+          </item>
+      </ul>
+    </category>
+
+    <button class="button" type="submit">Submit</button>
+  </form>
+</body>
+
+</html>
